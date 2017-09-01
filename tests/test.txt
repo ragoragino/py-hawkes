@@ -1,0 +1,11 @@
+============================= test session starts =============================
+platform win32 -- Python 3.6.0, pytest-3.0.7, py-1.4.33, pluggy-0.4.0
+rootdir: D:\Materials\Programming\Projekty\py-hawkes\py-hawkes, inifile:
+plugins: cov-2.4.0
+collected 180 items
+
+D:\Materials\Programming\Projekty\py-hawkes\py-hawkes\tests\test_exp.py ........................................
+D:\Materials\Programming\Projekty\py-hawkes\py-hawkes\tests\test_gen.py ................................................................
+D:\Materials\Programming\Projekty\py-hawkes\py-hawkes\tests\test_pl.py ............................................................................
+
+========================= 180 passed in 13.90 seconds =========================

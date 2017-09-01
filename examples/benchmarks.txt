@@ -1,0 +1,12 @@
+1D Hawkes simulation with an exponential kernel with constant base intensity of length 5000382 lasted for 0.989661693572998 s
+1D Hawkes simulation with an exponential kernel with quadratic base intensity of length 4833340 lasted for 14.604287385940552 s
+1D Hawkes simulation with a power-law kernel with constant base intensity of length 5004875 lasted for 6.278717994689941 s
+1D Hawkes simulation with a power-law kernel with quadratic base intensity of length 4839030 lasted for 23.64384651184082 s
+2D Hawkes simulation with an exponential kernel with constant base intensity of length 4897864 lasted for 2.269531011581421 s
+2D Hawkes simulation with an exponential kernel with quadratic base intensity of length 5222768 lasted for 37.23448085784912 s
+2D Hawkes simulation with a power-law kernel with constant base intensity of length 5004875 lasted for 22.230555057525635 s
+2D Hawkes simulation with a power-law kernel with quadratic base intensity of length 5338854 lasted for 63.222546339035034 s
+3D Hawkes simulation with an exponential kernel with constant base intensity of length 5162254 lasted for 4.316472053527832 s
+3D Hawkes simulation with an exponential kernel with quadratic base intensity of length 4961617 lasted for 57.05364799499512 s
+3D Hawkes simulation with a power-law kernel with constant base intensity of length 4897456 lasted for 48.08286499977112 s
+3D Hawkes simulation with a power-law kernel with quadratic base intensity of length 4706320 lasted for 100.74939703941345 s
