@@ -48,11 +48,14 @@ def parameters2():
 @pytest.fixture
 def parameters3():
     mu = np.array([0.15, 0.15, 0.15], dtype=float)
-    rho = np.array([[0.1, 0.1, 0.1], [0.1, 0.1, 0.1], [0.1, 0.1, 0.1]], dtype=float)
+    rho = np.array([[0.1, 0.1, 0.1], [0.1, 0.1, 0.1], [0.1, 0.1, 0.1]],
+                   dtype=float)
     m = np.array([[5, 5, 5], [5, 5, 5], [5, 5, 5]], dtype=float)
     M = np.array([[5, 5, 5], [5, 5, 5], [5, 5, 5]], dtype=int)
-    epsilon = np.array([[0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]], dtype=float)
-    n = np.array([[0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]], dtype=float)
+    epsilon = np.array([[0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]],
+                       dtype=float)
+    n = np.array([[0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]],
+                 dtype=float)
     return mu, rho, m, M, epsilon, n
 
 
@@ -79,7 +82,8 @@ def comp_list_stat(parameters3):
         hawkes = pyhawkes.sim_gen_hawkes(mu, rho, m, M, epsilon, n, T,
                                              pfunc=base, max=limit, rseed=seed)
         comp = pyhawkes.comp_gen_hawkes(mu, rho, m, M, epsilon, n,
-                                            pfunc_int=base_int, events=hawkes, length=T)
+                                        pfunc_int=base_int, events=hawkes,
+                                        length=T)
         return comp[pos]
 
     return comp_list_stat_int
@@ -286,14 +290,15 @@ def test_pl_gen(parameters3, hawkes_list_stat, comp_list_stat):
     p_value_pl = [[] for _ in range(dim)]
     for i in range(dim):
         assert len(hawkes_pl[i]) == len(hawkes_list_stat[i])
-        _, p_value_gen[i] = scipy.stats.kstest(comp_list_stat(i), 'expon', args=(0, 1))
+        _, p_value_gen[i] = scipy.stats.kstest(comp_list_stat(i), 'expon',
+                                               args=(0, 1))
         _, p_value_pl[i] = scipy.stats.kstest(comp_pl[i], 'expon', args=(0, 1))
         assert np.round(p_value_pl[i], 4) == np.round(p_value_gen[i], 4)
     ll_gen = pyhawkes.lik_gen_hawkes(mu, rho, m, M, epsilon, n, pfunc=base,
-                                         pfunc_int=base_int, events=hawkes_list_stat,
-                                         length=T)
-    ll_pl = pyhawkes.lik_power_hawkes(mu, rho, m, M, epsilon, n, events=hawkes_pl,
-                                      length=T)
+                                     pfunc_int=base_int, events=
+                                     hawkes_list_stat, length=T)
+    ll_pl = pyhawkes.lik_power_hawkes(mu, rho, m, M, epsilon, n,
+                                      events=hawkes_pl, length=T)
     assert np.abs(ll_pl - ll_gen) < 10
 
 
@@ -307,17 +312,20 @@ def test_exp_gen():
     n = np.array([[0.5]], dtype=float)
     alpha = np.array([[0.5]], dtype=float)
     beta = np.array([[1]], dtype=float)
-    hawkes_gen = pyhawkes.sim_gen_hawkes(mu, rho, m, M, epsilon, n, pfunc=base, length=T,
-                                             max=limit, rseed=seed)
-    hawkes_exp = pyhawkes.sim_exp_hawkes(mu, alpha, beta, length=T, max=limit, rseed=seed)
-    comp_gen = pyhawkes.comp_gen_hawkes(mu, rho, m, M, epsilon, n, events=hawkes_gen,
-                                            pfunc_int=base_int, length=T)
-    comp_exp = pyhawkes.comp_exp_hawkes(mu, alpha, beta, events=hawkes_exp, length=T)
+    hawkes_gen = pyhawkes.sim_gen_hawkes(mu, rho, m, M, epsilon, n, pfunc=base,
+                                         length=T, max=limit, rseed=seed)
+    hawkes_exp = pyhawkes.sim_exp_hawkes(mu, alpha, beta, length=T, max=limit,
+                                         rseed=seed)
+    comp_gen = pyhawkes.comp_gen_hawkes(mu, rho, m, M, epsilon, n,
+                                        events=hawkes_gen, pfunc_int=base_int,
+                                        length=T)
+    comp_exp = pyhawkes.comp_exp_hawkes(mu, alpha, beta, events=hawkes_exp,
+                                        length=T)
     _, p_value_gen = scipy.stats.kstest(comp_gen[0], 'expon', args=(0, 1))
     _, p_value_exp = scipy.stats.kstest(comp_exp[0], 'expon', args=(0, 1))
     ll_gen = pyhawkes.lik_gen_hawkes(mu, rho, m, M, epsilon, n, pfunc=base,
-                                         pfunc_int=base_int, events=hawkes_gen,
-                                         length=T)
+                                     pfunc_int=base_int, events=hawkes_gen,
+                                     length=T)
     ll_exp = pyhawkes.lik_exp_hawkes(mu, alpha, beta, hawkes_exp, length=T)
     assert len(hawkes_exp[0]) == len(hawkes_gen[0])
     assert np.round(p_value_exp, 4) == np.round(p_value_gen, 4)

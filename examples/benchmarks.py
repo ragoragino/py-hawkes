@@ -23,7 +23,6 @@ if __name__ == '__main__':
     T = 5000000
     seed = 123
     max_jumps = 10000000
-    exponent = 1
 
     mu1d = np.array([0.45, 0.4], dtype=float)
 

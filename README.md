@@ -8,7 +8,7 @@ and approximated power-law kernels with a possibility of an arbitrary base inten
 The library provides functions for simulation and computation of compensator, negative log-likelihood and conditional intensity function for a multivariate Hawkes process
 with exponential, power-law or general kernel. The last one also allows specification of an arbitrary base intensity function and subsumes both exponential and power-law kernels. 
 The reason why also separate exponential and power-law kernel functionalities are present is due to efficiency reasons, as general kernel procedures require Python function calls 
-from C++ that are very performance-expensive. See also the BENCHMARKS section below for a performance comparison of different simulation routines.
+from C++ that are very performance-expensive. See also the Benchmarks section below for a performance comparison of different simulation routines.
 
 For the specific usage of library functionalities see the Jupyter Notebooks in examples subfolder.
 
@@ -47,7 +47,7 @@ MSVC 14.0
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
-## BECHNMARKS
+## Benchmarks
 
 Running [benchmarks.py](https://github.com/ragoragino/py-hawkes/tree/master/examples/benchmarks.py) on a single core 
 of CPU Intel® Core i7-7500U 2.7Ghz with Turbo Boost up to 3.5GHz.

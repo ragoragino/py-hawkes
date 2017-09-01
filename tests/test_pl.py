@@ -41,25 +41,32 @@ def parameters2():
 @pytest.fixture
 def parameters3():
     mu = np.array([0.15, 0.15, 0.15], dtype=float)
-    rho = np.array([[0.1, 0.1, 0.1], [0.1, 0.1, 0.1], [0.1, 0.1, 0.1]], dtype=float)
-    m = np.array([[5, 5, 5], [5, 5, 5], [5, 5, 5]], dtype=float)
-    M = np.array([[5, 5, 5], [5, 5, 5], [5, 5, 5]], dtype=int)
-    epsilon = np.array([[0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]], dtype=float)
-    n = np.array([[0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]], dtype=float)
+    rho = np.array([[0.1, 0.1, 0.1], [0.1, 0.1, 0.1], [0.1, 0.1, 0.1]],
+                   dtype=float)
+    m = np.array([[5, 5, 5], [5, 5, 5], [5, 5, 5]],
+                 dtype=float)
+    M = np.array([[5, 5, 5], [5, 5, 5], [5, 5, 5]],
+                 dtype=int)
+    epsilon = np.array([[0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]],
+                       dtype=float)
+    n = np.array([[0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2]],
+                 dtype=float)
     return mu, rho, m, M, epsilon, n
 
 
 @pytest.fixture
 def hawkes_list(parameters2):
     mu, rho, m, M, epsilon, n = parameters2
-    hawkes = pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, length=T, max=limit, rseed=seed)
+    hawkes = pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, length=T,
+                                       max=limit, rseed=seed)
     return hawkes
 
 
 @pytest.fixture
 def hawkes_list_stat(parameters3):
     mu, rho, m, M, epsilon, n = parameters3
-    hawkes = pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, T, max=limit, rseed=seed)
+    hawkes = pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, T, max=limit,
+                                       rseed=seed)
     return hawkes
 
 
@@ -67,7 +74,8 @@ def hawkes_list_stat(parameters3):
 def comp_list_stat(parameters3):
     def comp_list_stat_int(pos):
         mu, rho, m, M, epsilon, n = parameters3
-        hawkes = pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, T, max=limit, rseed=seed)
+        hawkes = pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, T, max=limit,
+                                           rseed=seed)
         comp = pyhawkes.comp_power_hawkes(mu, rho, m, M, epsilon, n, hawkes, T)
         return comp[pos]
     return comp_list_stat_int
@@ -268,7 +276,8 @@ def test_stationarity(parameters2):
     mu, rho, m, M, epsilon, _ = parameters2
     n = np.array([[1, 1], [1, 1]], dtype=float)
     try:
-        pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, length=T, max=limit, rseed=seed)
+        pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, length=T, max=limit,
+                                  rseed=seed)
     except RuntimeError:
         assert True
     else:
@@ -279,7 +288,8 @@ def test_limit(parameters2):
     mu, rho, m, M, epsilon, n = parameters2
     loc_limit = 10
     try:
-        pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, length=T, max=loc_limit, rseed=seed)
+        pyhawkes.sim_power_hawkes(mu, rho, m, M, epsilon, n, length=T, max=loc_limit,
+                                  rseed=seed)
     except RuntimeError:
         assert True
     else:
@@ -295,5 +305,6 @@ def test_ks(comp_list_stat):
 
 def test_ll(parameters3, hawkes_list_stat):
     mu, rho, m, M, epsilon, n = parameters3
-    log_likelihood = pyhawkes.lik_power_hawkes(mu, rho, m, M, epsilon, n, events=hawkes_list_stat, length=T)
+    log_likelihood = pyhawkes.lik_power_hawkes(mu, rho, m, M, epsilon, n,
+                                               events=hawkes_list_stat, length=T)
     assert np.round(log_likelihood) == 202261
