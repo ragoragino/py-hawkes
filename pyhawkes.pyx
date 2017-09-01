@@ -1,13 +1,10 @@
-import sys
-import os
 import numpy as np
 cimport numpy as np
 cimport pyhawkes
 import cython
 import ctypes
-from libcpp cimport bool
 from libc.time cimport time, time_t
-from functools import partial
+
 
 
 """
@@ -50,8 +47,8 @@ cdef control_pl(mu, rho, m, M, epsilon, n):
     == M.shape == epsilon.shape == n.shape:
         raise IncompatibleShapeError()
 
-    if np.any(mu <= 0) or np.any(rho <= 0) or np.any(m <= 0) or np.any(M <= 0) \
-    or np.any(epsilon <= 0) or np.any(n <= 0):
+    if np.any(mu <= 0) or np.any(rho <= 0) or np.any(m <= 0) or \
+    np.any(M <= 0) or np.any(epsilon <= 0) or np.any(n <= 0):
         raise ParametersConstraintError()
 
 
@@ -82,9 +79,9 @@ EXPONENTIAL HAWKES
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def sim_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] alpha not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] beta not None,
-                     length, max = climit, rseed = cseed):
+                   np.ndarray[dtype=double, ndim=2, mode="c"] alpha not None,
+                   np.ndarray[dtype=double, ndim=2, mode="c"] beta not None,
+                   length, max = climit, rseed = cseed):
     control_exp(mu, alpha, beta)
 
     cdef:
@@ -92,10 +89,13 @@ def sim_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
         int seed = rseed
         int dim = mu.shape[0]
         double clength = length
-        np.ndarray[double, ndim = 2, mode = 'c'] events = np.ascontiguousarray(np.zeros((dim, limit), dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events = \
+            np.ascontiguousarray(np.zeros((dim, limit), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
-    pyhawkes.simulate_exponential_hawkes(&mu[0], &alpha[0,0], &beta[0,0], clength, dim, limit, &events[0,0], &tracker[0], seed)
+    pyhawkes.simulate_exponential_hawkes(&mu[0], &alpha[0,0], &beta[0,0],
+        clength, dim, limit, &events[0,0], &tracker[0], seed)
     hawkes = [events[i, :tracker[i]] for i in range(dim)]
 
     return hawkes
@@ -104,9 +104,9 @@ def sim_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def comp_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] alpha not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] beta not None,
-                     events, length):
+                    np.ndarray[dtype=double, ndim=2, mode="c"] alpha not None,
+                    np.ndarray[dtype=double, ndim=2, mode="c"] beta not None,
+                    events, length):
     control_exp(mu, alpha, beta)
 
     cdef:
@@ -119,19 +119,21 @@ def comp_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
         max_len = max(max_len, len(events[i]))
 
     cdef:
-        np.ndarray[double, ndim = 2, mode = 'c'] compensator_series = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[double, ndim = 2, mode = 'c'] events_new = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] compensator_series = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events_new = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
     for i in range(dim):
         tracker[i] = len(events[i])
         events_new[i, :tracker[i]] = events[i]
 
     for i in range(dim):
-        pyhawkes.compensator_exponential_hawkes(&mu[0], &alpha[0,0], &beta[0,0], clength, i, dim, max_len, &events_new[0,0],
-        &tracker[0], &compensator_series[0,0] + i * max_len)
+        pyhawkes.compensator_exponential_hawkes(&mu[0], &alpha[0,0],
+            &beta[0,0], clength, i, dim, max_len, &events_new[0,0],
+            &tracker[0], &compensator_series[0,0] + i * max_len)
     compensator = [compensator_series[i, :tracker[i]] for i in range(dim)]
 
     return compensator
@@ -140,9 +142,9 @@ def comp_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def lik_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] alpha not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] beta not None,
-                     events, length):
+                   np.ndarray[dtype=double, ndim=2, mode="c"] alpha not None,
+                   np.ndarray[dtype=double, ndim=2, mode="c"] beta not None,
+                   events, length):
     control_exp(mu, alpha, beta)
 
     cdef:
@@ -153,28 +155,31 @@ def lik_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
         double likelihood = 0
 
     for i in range(dim):
-        max_len = max(max_len, len(events[i]) + 1) # +1 because of need for one more space for compensator routine
+        max_len = max(max_len, len(events[i]) + 1)
+        # +1 because of need for one more space for compensator routine
 
     cdef:
-        np.ndarray[double, ndim = 2, mode = 'c'] events_new = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events_new = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
     for i in range(dim):
         tracker[i] = len(events[i])
         events_new[i, :tracker[i]] = events[i]
 
     for i in range(dim):
-        likelihood += pyhawkes.loglikelihood_exponential_hawkes(&mu[0], &alpha[0,0], &beta[0,0], clength, i, dim, max_len,
-        &events_new[0,0], &tracker[0])
+        likelihood += pyhawkes.loglikelihood_exponential_hawkes(&mu[0],
+            &alpha[0,0], &beta[0,0], clength, i, dim, max_len,
+            &events_new[0,0], &tracker[0])
 
     return likelihood
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def lik_exp_hawkes_optim(np.ndarray[dtype=double, ndim=1, mode="c"] parameters not None,
-                     events, length):
+def lik_exp_hawkes_optim(np.ndarray[dtype=double, ndim=1, mode="c"] parameters
+                         not None, events, length):
     cdef:
         int i
         int dim = len(events)
@@ -184,20 +189,23 @@ def lik_exp_hawkes_optim(np.ndarray[dtype=double, ndim=1, mode="c"] parameters n
         int step = dim + ipow(dim, 2)
 
     for i in range(dim):
-        max_len = max(max_len, len(events[i]) + 1) # +1 because of need for one more space for compensator routine
+        max_len = max(max_len, len(events[i]) + 1)
+        # +1 because of need for one more space for compensator routine
 
     cdef:
-        np.ndarray[double, ndim = 2, mode = 'c'] events_new = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events_new \
+            = np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker \
+            = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
     for i in range(dim):
         tracker[i] = len(events[i])
         events_new[i, :tracker[i]] = events[i]
 
     for i in range(dim):
-        likelihood += pyhawkes.loglikelihood_exponential_hawkes(&parameters[0], &parameters[0] + dim, &parameters[0] + step,
-                        clength, i, dim, max_len, &events_new[0,0], &tracker[0])
+        likelihood += pyhawkes.loglikelihood_exponential_hawkes(&parameters[0],
+            &parameters[0] + dim, &parameters[0] + step, clength, i, dim,
+            max_len, &events_new[0,0], &tracker[0])
 
     return likelihood
 
@@ -223,20 +231,26 @@ def plot_exp_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
     cdef:
         int points = (int)(end - begin) / grid
         int plt_limit = max_len + points + 1
-        np.ndarray[double, ndim = 2, mode = 'c'] plt_events = np.ascontiguousarray(np.zeros((dim, plt_limit), dtype = DTYPE))
-        np.ndarray[double, ndim = 2, mode = 'c'] plt_x = np.ascontiguousarray(np.zeros((dim, plt_limit), dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] plt_end_tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
-        np.ndarray[double, ndim = 2, mode = 'c'] events_new = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] plt_events = \
+            np.ascontiguousarray(np.zeros((dim, plt_limit), dtype = DTYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] plt_x = \
+            np.ascontiguousarray(np.zeros((dim, plt_limit), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] plt_end_tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events_new = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
     for i in range(dim):
         tracker[i] = len(events[i])
         events_new[i, :tracker[i]] = events[i]
 
-    pyhawkes.plt_exponential_hawkes(&mu[0], &alpha[0,0], &beta[0,0], begin, end, grid, dim, max_len, &events_new[0,0], &tracker[0],
-                            &plt_events[0,0], &plt_x[0,0], &plt_end_tracker[0])
-    plot_hawkes = [plt_events[i, :plt_end_tracker[i]] for i in range(dim)], [plt_x[i, :plt_end_tracker[i]] for i in range(dim)]
+    pyhawkes.plt_exponential_hawkes(&mu[0], &alpha[0,0], &beta[0,0], begin,
+        end, grid, dim, max_len, &events_new[0,0], &tracker[0], &plt_events[0,0],
+        &plt_x[0,0], &plt_end_tracker[0])
+    plot_hawkes = [plt_events[i, :plt_end_tracker[i]] for i in range(dim)], \
+        [plt_x[i, :plt_end_tracker[i]] for i in range(dim)]
 
     return plot_hawkes
 
@@ -262,11 +276,14 @@ def sim_power_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
         dim = mu.shape[0]
         int seed = rseed
         double clength = length
-        np.ndarray[double, ndim = 2, mode = 'c'] events = np.ascontiguousarray(np.zeros((dim, limit), dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events = \
+            np.ascontiguousarray(np.zeros((dim, limit), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
-    pyhawkes.simulate_power_hawkes(&mu[0], &rho[0,0], &m[0,0], &M[0,0], &epsilon[0,0], &n[0,0], clength, dim, limit, &events[0,0],
-        &tracker[0], seed)
+    pyhawkes.simulate_power_hawkes(&mu[0], &rho[0,0], &m[0,0], &M[0,0],
+        &epsilon[0,0], &n[0,0], clength, dim, limit, &events[0,0], &tracker[0],
+        seed)
     hawkes = [events[i, :tracker[i]] for i in range(dim)]
 
     return hawkes
@@ -275,12 +292,12 @@ def sim_power_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def comp_power_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] rho not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] m not None,
-                     np.ndarray[dtype=int, ndim=2, mode="c"] M not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] epsilon not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] n not None,
-                     events, length):
+                      np.ndarray[dtype=double, ndim=2, mode="c"] rho not None,
+                      np.ndarray[dtype=double, ndim=2, mode="c"] m not None,
+                      np.ndarray[dtype=int, ndim=2, mode="c"] M not None,
+                      np.ndarray[dtype=double, ndim=2, mode="c"] epsilon not None,
+                      np.ndarray[dtype=double, ndim=2, mode="c"] n not None,
+                      events, length):
     control_pl(mu, rho, m, M, epsilon, n)
 
     cdef:
@@ -293,11 +310,12 @@ def comp_power_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
         max_len = max(max_len, len(events[i]))
 
     cdef:
-        np.ndarray[double, ndim = 2, mode = 'c'] compensator_series = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[double, ndim = 2, mode = 'c'] events_new = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] compensator_series = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events_new = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
         double * Z = NULL
         double * alpha = NULL
 
@@ -306,8 +324,10 @@ def comp_power_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
         events_new[i, :tracker[i]] = events[i]
 
     for i in range(dim):
-        pyhawkes.compensator_power_hawkes(&mu[0], &rho[0,0], &m[0,0], &M[0,0], &epsilon[0,0], &n[0,0], clength, i, dim, max_len,
-        &events_new[0,0], &tracker[0], &compensator_series[0,0] + i * max_len, Z, alpha)
+        pyhawkes.compensator_power_hawkes(&mu[0], &rho[0,0], &m[0,0],
+            &M[0,0], &epsilon[0,0], &n[0,0], clength, i, dim, max_len,
+            &events_new[0,0], &tracker[0], &compensator_series[0,0] + i * max_len,
+            Z, alpha)
     compensator = [compensator_series[i, :tracker[i]] for i in range(dim)]
 
     return compensator
@@ -332,30 +352,33 @@ def lik_power_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
         double likelihood = 0
 
     for i in range(dim):
-        max_len = max(max_len, len(events[i]) + 1) # +1 because of need for one more space for compensator routine
+        max_len = max(max_len, len(events[i]) + 1)
+        # +1 because of need for one more space for compensator routine
 
     cdef:
-        np.ndarray[double, ndim = 2, mode = 'c'] events_new = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events_new = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
     for i in range(dim):
         tracker[i] = len(events[i])
         events_new[i, :tracker[i]] = events[i]
 
     for i in range(dim):
-        likelihood += pyhawkes.loglikelihood_power_hawkes(&mu[0], &rho[0,0], &m[0,0], &M[0,0], &epsilon[0,0], &n[0,0], clength,
-                                                i, dim, max_len, &events_new[0,0], &tracker[0])
+        likelihood += pyhawkes.loglikelihood_power_hawkes(&mu[0], &rho[0,0],
+            &m[0,0], &M[0,0], &epsilon[0,0], &n[0,0], clength, i, dim,
+            max_len, &events_new[0,0], &tracker[0])
 
     return likelihood
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def lik_power_hawkes_optim(np.ndarray[dtype=double, ndim=1, mode="c"] parameters not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] m not None,
-                     np.ndarray[dtype=int, ndim=2, mode="c"] M not None,
-                     events, length):
+def lik_power_hawkes_optim(np.ndarray[dtype=double, ndim=1, mode="c"] parameters
+                           not None, np.ndarray[dtype=double, ndim=2, mode="c"] m
+                           not None, np.ndarray[dtype=int, ndim=2, mode="c"] M
+                           not None, events, length):
 
     cdef:
         int i
@@ -365,21 +388,25 @@ def lik_power_hawkes_optim(np.ndarray[dtype=double, ndim=1, mode="c"] parameters
         double likelihood = 0
 
     for i in range(dim):
-        max_len = max(max_len, len(events[i]) + 1) # +1 because of need for one more space for compensator routine
+        max_len = max(max_len, len(events[i]) + 1)
+        # +1 because of need for one more space for compensator routine
 
     cdef:
         int step = ipow(dim, 2)
-        np.ndarray[double, ndim = 2, mode = 'c'] events_new = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events_new = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
     for i in range(dim):
         tracker[i] = len(events[i])
         events_new[i, :tracker[i]] = events[i]
 
     for i in range(dim):
-        likelihood += pyhawkes.loglikelihood_power_hawkes(&parameters[0], &parameters[0] + dim, &m[0,0], &M[0,0], &parameters[0] + dim + step,
-                                                &parameters[0] + dim + 2 * step, clength, i, dim, max_len, &events_new[0,0], &tracker[0])
+        likelihood += pyhawkes.loglikelihood_power_hawkes(&parameters[0],
+            &parameters[0] + dim, &m[0,0], &M[0,0], &parameters[0] + dim + step,
+            &parameters[0] + dim + 2 * step, clength, i, dim, max_len,
+            &events_new[0,0], &tracker[0])
 
     return likelihood
 
@@ -387,12 +414,12 @@ def lik_power_hawkes_optim(np.ndarray[dtype=double, ndim=1, mode="c"] parameters
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def plot_power_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] rho not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] m not None,
-                     np.ndarray[dtype=int, ndim=2, mode="c"] M not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] epsilon not None,
-                     np.ndarray[dtype=double, ndim=2, mode="c"] n not None,
-                     events, length, begin, end, grid):
+                      np.ndarray[dtype=double, ndim=2, mode="c"] rho not None,
+                      np.ndarray[dtype=double, ndim=2, mode="c"] m not None,
+                      np.ndarray[dtype=int, ndim=2, mode="c"] M not None,
+                      np.ndarray[dtype=double, ndim=2, mode="c"] epsilon not None,
+                      np.ndarray[dtype=double, ndim=2, mode="c"] n not None,
+                      events, length, begin, end, grid):
     control_pl(mu, rho, m, M, epsilon, n)
 
     cdef:
@@ -408,20 +435,27 @@ def plot_power_hawkes(np.ndarray[dtype=double, ndim=1, mode="c"] mu not None,
     cdef:
         int points = (int)(end - begin) / grid
         int plt_limit = max_len + points + 1
-        np.ndarray[double, ndim = 2, mode = 'c'] plt_events = np.ascontiguousarray(np.zeros((dim, plt_limit), dtype = DTYPE))
-        np.ndarray[double, ndim = 2, mode = 'c'] plt_x = np.ascontiguousarray(np.zeros((dim, plt_limit), dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] plt_end_tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
-        np.ndarray[double, ndim = 2, mode = 'c'] events_new = np.ascontiguousarray(np.zeros((dim, max_len),
-        dtype = DTYPE))
-        np.ndarray[int, ndim = 1, mode = 'c'] tracker = np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] plt_events = \
+            np.ascontiguousarray(np.zeros((dim, plt_limit), dtype = DTYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] plt_x = \
+            np.ascontiguousarray(np.zeros((dim, plt_limit), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] plt_end_tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
+        np.ndarray[double, ndim = 2, mode = 'c'] events_new = \
+            np.ascontiguousarray(np.zeros((dim, max_len), dtype = DTYPE))
+        np.ndarray[int, ndim = 1, mode = 'c'] tracker = \
+            np.ascontiguousarray(np.zeros(dim, dtype = ITYPE))
 
     for i in range(dim):
         tracker[i] = len(events[i])
         events_new[i, :tracker[i]] = events[i]
 
-    pyhawkes.plt_power_hawkes(&mu[0], &rho[0,0], &m[0,0], &M[0,0], &epsilon[0,0], &n[0,0], begin, end, grid, dim, max_len,
-        &events_new[0,0], &tracker[0], &plt_events[0,0], &plt_x[0,0], &plt_end_tracker[0])
-    plot_hawkes = [plt_events[i, :plt_end_tracker[i]] for i in range(dim)], [plt_x[i, :plt_end_tracker[i]] for i in range(dim)]
+    pyhawkes.plt_power_hawkes(&mu[0], &rho[0,0], &m[0,0], &M[0,0],
+        &epsilon[0,0], &n[0,0], begin, end, grid, dim, max_len,
+        &events_new[0,0], &tracker[0], &plt_events[0,0], &plt_x[0,0],
+        &plt_end_tracker[0])
+    plot_hawkes = [plt_events[i, :plt_end_tracker[i]] for i in range(dim)], \
+        [plt_x[i, :plt_end_tracker[i]] for i in range(dim)]
 
     return plot_hawkes
 
