@@ -67,4 +67,5 @@ of CPU Intel® Core i7-7500U 2.7Ghz with Turbo Boost up to 3.5GHz.
 | Power-Law     | 3              | C              | 4,897,456     | 48.083    |
 | Power-Law     | 3              | Q              | 4,706,320     | 100.749   |
 
-where C means constant base intensity and Q quadratic base intensity.
+where C means constant base intensity and Q quadratic base intensity. All quadratic routines are run with the general procedure 
+(i.e. sim_gen_hawkes).
