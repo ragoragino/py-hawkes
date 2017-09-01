@@ -29,8 +29,10 @@ process_list: updated with simulated values
 process_track: updated with indices of last simulated values in each dimension
 */
 
-void simulate_general_hawkes(const double mu[], const double rho[], const double m[], const int M[], const double epsilon[],
-	const double n[], double T, int dim, int max, double * process_list, int * process_track, unsigned int seed, double(*func)(int loc, double t));
+void simulate_general_hawkes(const double mu[], const double rho[], const double m[], 
+	const int M[], const double epsilon[], const double n[], double T, int dim, int max, 
+	double * process_list, int * process_track, unsigned int seed, 
+	double(*func)(int loc, double t));
 
 
 /*
@@ -72,9 +74,10 @@ func_int: function pointer to an integral of a base intensity function. The func
 compensator_series: updated with values of the compensator series for dimension pos.
 */
 
-void compensator_general_hawkes(const double mu[], const double rho[], const double m[], const int M[], const double epsilon[], const double n[],
-	double T, int pos, int dim, int max, double * process_list, int * process_track, double * compensator_series, double * Z, double * alpha,
-	double(*func)(int loc, double arg1, double arg2));
+void compensator_general_hawkes(const double mu[], const double rho[], const double m[], 
+	const int M[], const double epsilon[], const double n[], double T, int pos, int dim,
+	int max, double * process_list, int * process_track, double * compensator_series, 
+	double * Z, double * alpha,	double(*func)(int loc, double arg1, double arg2));
 
 
 /*
@@ -110,8 +113,10 @@ func_int: function pointer to an integral of a base intensity function. The func
 double: negative log-likelihood
 */
 
-double loglikelihood_general_hawkes(double mu[], double rho[], double m[], int M[], double epsilon[], double n[], double T, int pos, int dim, int max,
-	double * process_list, int * process_track, double(*func)(int loc, double t), double(*func_int)(int loc, double arg1, double arg2));
+double loglikelihood_general_hawkes(double mu[], double rho[], double m[], int M[], 
+	double epsilon[], double n[], double T, int pos, int dim, int max,
+	double * process_list, int * process_track, double(*func)(int loc, double t), 
+	double(*func_int)(int loc, double arg1, double arg2));
 
 
 /*
@@ -153,6 +158,8 @@ plt_end: updated by indices of last values in plt_intensity and plt_list
 	for each dimension
 */
 
-void plt_general_hawkes(const double mu[], const double rho[], const double m[], const int M[], const double epsilon[], const double n[],
-	int begin, int end, double grid, int dim, int max, double * process_list, int * process_track, double * plt_intensity, double *
-	plt_list, int * plt_end, double(*func)(int loc, double t));
+void plt_general_hawkes(const double mu[], const double rho[], const double m[], 
+	const int M[], const double epsilon[], const double n[], int begin, int end, 
+	double grid, int dim, int max, double * process_list, int * process_track, 
+	double * plt_intensity, double * plt_list, int * plt_end, 
+	double(*func)(int loc, double t));

@@ -1,20 +1,21 @@
 # py-hawkes
 
 Python library with C++ extensions for simulation, compensator, log-likelihood and intensity function computation for a multivariate Hawkes processes with exponential
-and approximated power-law kernels with an possibility of an arbitrary base intensity function specification. 
+and approximated power-law kernels with a possibility of an arbitrary base intensity function specification. 
 
 ## Getting Started
 
 The library provides functions for simulation and computation of compensator, negative log-likelihood and conditional intensity function for a multivariate Hawkes process
-with exponential, power-law or general kernel. The last one also allows specification of an arbitrary base-intensity function and subsumes both exponential and power-law kernel. 
+with exponential, power-law or general kernel. The last one also allows specification of an arbitrary base intensity function and subsumes both exponential and power-law kernels. 
 The reason why also separate exponential and power-law kernel functionalities are present is due to efficiency reasons, as general kernel procedures require Python function calls 
-from C++, that are very time expensive. See also the BENCHMARKS section below for a performance comparison of different simulation routines.
+from C++ that are very performance-expensive. See also the BENCHMARKS section below for a performance comparison of different simulation routines.
 
 For the specific usage of library functionalities see the Jupyter Notebooks in examples subfolder.
 
 ### Prerequisites
 
 Python (together with numpy and Cython)
+
 Eigen C++ library
 
 ### Installing
@@ -26,26 +27,29 @@ For usage on other systems and Python and compiler versions one should build the
 In this case, Cython and numpy needs to be installed, Eigen C++ library has to be downloaded and setup.py needs to be updated in include_dirs argument by the directory where Eigen C++ library is located, i.e. 
 replace the existing setup part by this snippet with updated Eigen C++ directory:
 
+```python
 setup(cmdclass={'build_ext': build_ext},
       ext_modules=[Extension("pyhawkes", sourcefiles, language="c++",
                              include_dirs=[".", np.get_include(), lib_dir, "YOUR/EIGEN/C++/DIRECTORY"])])
+```
 
 ## Running the tests
 
-Tests are build with py.test 3.0.7. Run by py.test [pyhawkes_dir] > [test_output_dir]
+Tests are build with py.test 3.0.7. Run by py.test [your/pyhawkes/dir] > [test/output/dir]
 
 ## Built With
 
 Python 3.6 (+ numpy 1.13.1, py.test 3.0.7, Cython 0.25.2)
+
 MSVC 14.0
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## BECHNMARKS
 
-Running examples/benchmark.py on a single core 
+Running [benchmarks.py](https://github.com/ragoragino/py-hawkes/tree/master/examples/benchmarks.py) on a single core 
 of CPU Intel® Core i7-7500U 2.7Ghz with Turbo Boost up to 3.5GHz.
 
 | Type          | Dim      | $\mu$ | Length        | Time (s)  |

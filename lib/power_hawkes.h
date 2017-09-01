@@ -26,8 +26,9 @@ process_list: updated with simulated values
 process_track: updated with indices of last simulated values in each dimension
 */
 
-void simulate_power_hawkes(const double mu[], const double rho[], const double m[], const int M[], const double epsilon[], const double n[],
-	double T, int dim, int max, double * process_list, int * process_track, unsigned int seed);
+void simulate_power_hawkes(const double mu[], const double rho[], const double m[], 
+	const int M[], const double epsilon[], const double n[], double T, int dim, 
+	int max, double * process_list, int * process_track, unsigned int seed);
 
 
 /*
@@ -66,9 +67,10 @@ alpha: an array containing rho * pow(m, i) for i = 0^{M_{pos}-1}values for a giv
 compensator_series: updated with values of the compensator series for dimension pos.
 */
 
-void compensator_power_hawkes(const double mu[], const double rho[], const double m[], const int M[], const double epsilon[], const double n[],
-	double T, int pos, int dim, int max, double * process_list, int * process_track, double * compensator_series, double * Z,
-	double * alpha);
+void compensator_power_hawkes(const double mu[], const double rho[], const double m[], 
+	const int M[], const double epsilon[], const double n[], double T, int pos, int dim, 
+	int max, double * process_list, int * process_track, double * compensator_series, 
+	double * Z,	double * alpha);
 
 
 /*
@@ -98,8 +100,9 @@ process_track: an array containing last indices of the simulated values in
 double: negative log-likelihood
 */
 
-double loglikelihood_power_hawkes(double mu[], double rho[], double m[], int M[], double epsilon[], double n[], double T, int pos,
-	int dim, int max, double * process_list, int * process_track);
+double loglikelihood_power_hawkes(double mu[], double rho[], double m[], int M[], 
+	double epsilon[], double n[], double T, int pos, int dim, int max, 
+	double * process_list, int * process_track);
 
 
 /*
@@ -138,6 +141,7 @@ plt_end: updated by indices of last values in plt_intensity and plt_list
 for each dimension
 */
 
-void plt_power_hawkes(const double mu[], const double rho[], const double m[], const int M[], const double epsilon[], const double n[],
-	int begin, int end, double grid, int dim, int max, double * process_list, int * process_track, double * plt_intensity, double * plt_list,
-	int * plt_end);
+void plt_power_hawkes(const double mu[], const double rho[], const double m[], 
+	const int M[], const double epsilon[], const double n[], int begin, int end, 
+	double grid, int dim, int max, double * process_list, int * process_track, 
+	double * plt_intensity, double * plt_list, int * plt_end);
