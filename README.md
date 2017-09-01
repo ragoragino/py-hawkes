@@ -52,19 +52,19 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 Running [benchmarks.py](https://github.com/ragoragino/py-hawkes/tree/master/examples/benchmarks.py) on a single core 
 of CPU Intel® Core i7-7500U 2.7Ghz with Turbo Boost up to 3.5GHz.
 
-| Type          | Dim      | Base Intensity | Length        | Time (s)  |
-| ------------- |:--------:| :-------------:|:-------------:| ---------:| 
-| Exponential   | 1        | C              | 5,000,382     | 0.990     |
-| Exponential   | 1        | Q              | 4,833,340     | 14.604    |
-| Power-Law     | 1        | C              | 5,004,875     | 6.279     |
-| Power-Law     | 1        | Q              | 4,839,030     | 23.644    |
-| Exponential   | 2        | C              | 4,897,864     | 2.270     |
-| Exponential   | 2        | Q              | 5,222,768     | 37.234    |
-| Power-Law     | 2        | C              | 5,004,875     | 22.231    |
-| Power-Law     | 2        | Q              | 5,338,854     | 63.223    |
-| Exponential   | 3        | C              | 5,162,254     | 4.316     |  
-| Exponential   | 3        | Q              | 4,961,617     | 57.054    |
-| Power-Law     | 3        | C              | 4,897,456     | 48.083    |
-| Power-Law     | 3        | Q              | 4,706,320     | 100.749   |
+| Type          | Dimensionality | Base Intensity | No. of Jumps  | Time (s)  |
+| ------------- |:--------------:| :-------------:|:-------------:| ---------:| 
+| Exponential   | 1              | C              | 5,000,382     | 0.990     |
+| Exponential   | 1              | Q              | 4,833,340     | 14.604    |
+| Power-Law     | 1              | C              | 5,004,875     | 6.279     |
+| Power-Law     | 1              | Q              | 4,839,030     | 23.644    |
+| Exponential   | 2              | C              | 4,897,864     | 2.270     |
+| Exponential   | 2              | Q              | 5,222,768     | 37.234    |
+| Power-Law     | 2              | C              | 5,004,875     | 22.231    |
+| Power-Law     | 2              | Q              | 5,338,854     | 63.223    |
+| Exponential   | 3              | C              | 5,162,254     | 4.316     |  
+| Exponential   | 3              | Q              | 4,961,617     | 57.054    |
+| Power-Law     | 3              | C              | 4,897,456     | 48.083    |
+| Power-Law     | 3              | Q              | 4,706,320     | 100.749   |
 
 where C means constant base intensity and Q quadratic base intensity.
