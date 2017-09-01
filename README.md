@@ -50,11 +50,11 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Benchmarks
 
 Here I present the results of simulations for different types of kernels, different base intensities and dimensions.
-Exponential simulations with constant base intensity are run with sim_exp_hawkes and 
-power-law simulations with constant base intensity are run with sim_power_hawkes.
+Exponential simulations with constant base intensity are run with sim_exp_hawkes function and 
+power-law simulations with constant base intensity are run with sim_power_hawkes function.
 All quadratic routines are run with the general procedure (i.e. sim_gen_hawkes).
-Running [benchmarks.py](https://github.com/ragoragino/py-hawkes/tree/master/examples/benchmarks.py) on a single core 
-of CPU Intel® Core i7-7500U 2.7Ghz with Turbo Boost up to 3.5GHz.
+Benchmarking was run with [benchmarks.py](https://github.com/ragoragino/py-hawkes/tree/master/examples/benchmarks.py) on a single core 
+on CPU Intel® Core i7-7500U 2.7Ghz with Turbo Boost up to 3.5GHz.
 
 | Type          | Dimensionality | Base Intensity | No. of Jumps  | Time (s)  |
 | ------------- |:--------------:| :-------------:|:-------------:| ---------:| 
