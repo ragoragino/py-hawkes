@@ -20,7 +20,7 @@ Eigen C++ library
 
 ### Installing
 
-There is a dynamic library build on Windows 10, Python 3.6 and MSVC 14.0 in the main directory. Just by downloading this .pyd file in your module directory,
+There is a dynamic library built on Windows 10, Python 3.6 and MSVC 14.0 in the main directory. Just by downloading this .pyd file in your module directory,
 one can simply use "import pyhawkes" to import all the functionality of the library.
 
 For usage on other systems and Python and compiler versions one should build the library by downloading it and running from the terminal/command prompt "python [your/pyhawkes/dir]setup.py build_ext --inplace".

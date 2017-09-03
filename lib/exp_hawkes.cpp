@@ -8,7 +8,13 @@
 
 void simulate_exponential_hawkes(const double mu[], const double alpha[], const double beta[], double T, int dim, int max,
     double * process_list, int * process_track, unsigned int seed)
-{   
+{
+	bool indicator = stationaritycheck(alpha, beta, dim);
+	if (indicator)
+	{
+		throw StationarityError("Non-stationary exponential kernel!");
+	}
+
     srand(seed);
     double s{ 0.0 };
     int l{ 0 };
@@ -25,17 +31,6 @@ void simulate_exponential_hawkes(const double mu[], const double alpha[], const 
     double * cumulative_lambda = (double*)calloc(dim, sizeof(double));
     int * other_process_track = (int*)calloc(dim * dim, sizeof(int));
 
-    bool indicator = stationaritycheck(alpha, beta, dim);
-    if (indicator)
-    {
-        free(other_process);
-        free(recursive_array);
-        free(individual_lambda);
-        free(other_process_track);
-        free(cumulative_lambda);
-        throw StationarityError("Non-stationary exponential kernel!");
-    }
-
     while (s < T)
     {	
         upper_lambda = 0.0;
@@ -50,25 +45,29 @@ void simulate_exponential_hawkes(const double mu[], const double alpha[], const 
                 free(cumulative_lambda);
                 throw LimitError("Given limit of jumps exceeded!");
             }
+
+			// Calculating the sum of lambda(s)
             upper_lambda += mu[i];
             for (int j = 0; j != dim; ++j)
             {
                 other_process[i * dim + j] = 0.0;
-                if (process_track[j] >= 1)
-                {
-                    if (process_track[i] >= 1)
-                    {
-                        for (int k = max * j + other_process_track[i * dim + j]; k != max * j + process_track[j]; ++k)
-                            other_process[i * dim + j] += exp(-(s - process_list[k]) * beta[i * dim + j]);
-                        upper_lambda += alpha[i * dim + j] * (exp(-(s - process_list[max * i + process_track[i] - 1]) * 
-                            beta[i * dim + j]) * recursive_array[i * dim + j] + other_process[i * dim + j]);
+				if (process_track[j] < 1)
+				{
+					continue;
+				}
 
-                    }
-                    else
-                    {
-                        for (int k = max * j; k != max * j + process_track[j]; ++k)
-                            upper_lambda += alpha[i * dim + j] * exp(-beta[i * dim + j] * (s - process_list[k]));
-                    }
+                if (process_track[i] >= 1)
+                {
+                    for (int k = max * j + other_process_track[i * dim + j]; k != max * j + process_track[j]; ++k)
+                        other_process[i * dim + j] += exp(-(s - process_list[k]) * beta[i * dim + j]);
+                    upper_lambda += alpha[i * dim + j] * (exp(-(s - process_list[max * i + process_track[i] - 1]) * 
+                        beta[i * dim + j]) * recursive_array[i * dim + j] + other_process[i * dim + j]);
+
+                }
+                else
+                {
+                    for (int k = max * j; k != max * j + process_track[j]; ++k)
+                        upper_lambda += alpha[i * dim + j] * exp(-beta[i * dim + j] * (s - process_list[k]));
                 }
             }
         }
@@ -80,23 +79,25 @@ void simulate_exponential_hawkes(const double mu[], const double alpha[], const 
         random_acc = random_check();
         acceptance = random_acc / RAND_MAX;
 
+		// Calculating the sum of updated lambda(s_new)
         for (int i = 0; i != dim; ++i)
         {
             individual_lambda[i] = mu[i];
             for (int j = 0; j != dim; ++j)
             {
-                if (process_track[j] >= 1)
+				if (process_track[j] < 1)
+				{
+					continue;
+				}
+                if (process_track[i] >= 1)
                 {
-                    if (process_track[i] >= 1)
-                    {
-                        individual_lambda[i] += alpha[i * dim + j] * (exp(-(s - process_list[max * i + process_track[i] - 1]) * 
-                            beta[i * dim + j]) * recursive_array[i * dim + j] + exp(-candidate * beta[i * dim + j]) * other_process[i * dim + j]);
-                    }
-                    else
-                    {
-                        for (int k = max * j; k != max * j + process_track[j]; ++k)
-                            individual_lambda[i] += alpha[i * dim + j] * exp(-beta[i * dim + j] * (s - process_list[k]));
-                    }
+                    individual_lambda[i] += alpha[i * dim + j] * (exp(-(s - process_list[max * i + process_track[i] - 1]) * 
+                        beta[i * dim + j]) * recursive_array[i * dim + j] + exp(-candidate * beta[i * dim + j]) * other_process[i * dim + j]);
+                }
+                else
+                {
+                    for (int k = max * j; k != max * j + process_track[j]; ++k)
+                        individual_lambda[i] += alpha[i * dim + j] * exp(-beta[i * dim + j] * (s - process_list[k]));
                 }
             }
         }
@@ -105,6 +106,7 @@ void simulate_exponential_hawkes(const double mu[], const double alpha[], const 
         for (int i = 1; i != dim; ++i)
             cumulative_lambda[i] = cumulative_lambda[i - 1] + individual_lambda[i];
         
+		// Checking the acceptance condition and finding the dimension of acceptance
         if (acceptance * upper_lambda <= cumulative_lambda[dim - 1])
         {
             l = 0;
@@ -112,6 +114,8 @@ void simulate_exponential_hawkes(const double mu[], const double alpha[], const 
                 l += 1;
             process_list[max * l + process_track[l]] = s;
             process_track[l] += 1;
+
+			// Adjusting reursive arrays in the accepted dimension
             for (int i = 0; i != dim; ++i)
             {
                 if (i != l)
@@ -167,12 +171,17 @@ void compensator_exponential_hawkes(const double mu[], const double alpha[], con
     double * recursive_array = (double*)calloc(dim, sizeof(double));
     int * other_process_track = (int*)calloc(dim, sizeof(int));
 
+	// Main routine for the compensator calculation
     for (int i = 0; i != process_track[pos]; ++i)
     {
-        if (i != 0)
-            compensator = mu[pos] * (process_list[max * pos + i] - process_list[max * pos + i - 1]);
-        else
-            compensator = mu[pos] * process_list[max * pos + i];
+		if (i != 0)
+		{
+			compensator = mu[pos] * (process_list[max * pos + i] - process_list[max * pos + i - 1]);
+		}
+		else
+		{
+			compensator = mu[pos] * process_list[max * pos + i];
+		}
 
         for (int j = 0; j != dim; ++j)
         {
@@ -260,6 +269,7 @@ double loglikelihood_exponential_hawkes(double mu[], double alpha[], double beta
         process_track[i] += 1;
     }
 
+	// Adding the sum of residual series to the likelihood
     compensator_exponential_hawkes(mu, alpha, beta, T, pos, dim, max, process_list, process_track, compensator_series);
     for (int i = 0; i != process_track[pos] + 1; ++i)
         loglikelihood -= compensator_series[i];
@@ -269,6 +279,7 @@ double loglikelihood_exponential_hawkes(double mu[], double alpha[], double beta
         process_list[max * i + process_track[i]] = 0; 
     }
     
+	// Adding the log(lambda(t_i)) for all t_i for given dimension to the likelihood
     for (int i = 0; i != process_track[pos]; ++i) 
     {
         recursive_sum = 0.0;
@@ -363,60 +374,80 @@ void plt_exponential_hawkes(const double mu[], const double alpha[], const doubl
         ordering_vec.clear();
         for (int i = 0; i != dim; ++i)
         { 
-            if (int_track[i] == process_track[i])
-                continue;
+			if (int_track[i] == process_track[i])
+			{
+				continue;
+			}
             order_i = int_track[i];
-            while (process_list[i * max + order_i] < s)
-            {
-                holder_obj = { i, process_list[i * max + order_i] };
-                ordering_vec.push_back(holder_obj);
-                ++order_i;
-                if (order_i == process_track[i])
-                    break;
-            }
+			while (process_list[i * max + order_i] < s)
+			{
+				holder_obj = { i, process_list[i * max + order_i] };
+				ordering_vec.push_back(holder_obj);
+				++order_i;
+				if (order_i == process_track[i])
+				{
+					break;
+				}
+			}
         }
         std::sort(ordering_vec.begin(), ordering_vec.end(), [](holder &a, holder &b) {return a.stamp <= b.stamp;});
         
+		// Adding sorted lambda values at jumps in the current timeframe (of length grid) 
         for (holder h : ordering_vec)
         {
             int i = h.index;
-            if(s >= begin)
-                plt_intensity[i * plt_length + plt_end[i]] = mu[i];
-            int_track[i] += 1;
+			if (s >= begin)
+			{
+				plt_intensity[i * plt_length + plt_end[i]] = mu[i];
+			}
+			int_track[i] += 1;
 
             for (int j = 0; j != dim; ++j)
             {
-                if (i != j)
-                {
-                    other_process[i * dim + j] = 0.0;
-                    for (int k = max * j + other_process_track[i * dim + j]; k != max * j + int_track[j]; ++k)
-                        other_process[i * dim + j] += exp(-(process_list[max * i + int_track[i] - 1] - process_list[k]) * beta[i * dim + j]);
+				if (i != j)
+				{
+					other_process[i * dim + j] = 0.0;
+					for (int k = max * j + other_process_track[i * dim + j]; k != max * j + int_track[j]; ++k)
+						other_process[i * dim + j] += exp(-(process_list[max * i + int_track[i] - 1] - process_list[k]) * beta[i * dim + j]);
 
-                    if (int_track[i] >= 2)
-                    {
-                        recursive_array[i * dim + j] = exp(-beta[i * dim + j] * (process_list[i * max + int_track[i] - 1] - 
-                            process_list[i * max + int_track[i] - 2])) * recursive_array[i * dim + j] + other_process[i * dim + j];
-                    }
-                    else
-                        recursive_array[i * dim + j] = other_process[i * dim + j];
-                }
+					if (int_track[i] >= 2)
+					{
+						recursive_array[i * dim + j] = exp(-beta[i * dim + j] * (process_list[i * max + int_track[i] - 1] -
+							process_list[i * max + int_track[i] - 2])) * recursive_array[i * dim + j] + other_process[i * dim + j];
+					}
+					else
+					{
+						recursive_array[i * dim + j] = other_process[i * dim + j];
+					}
+				}
                 else if (int_track[i] >= 2)
                 {
                     recursive_array[i * dim + j] = exp(-beta[i * dim + j] * (process_list[i * max + int_track[i] - 1] - 
                         process_list[i * max + int_track[i] - 2])) * (recursive_array[i * dim + j] + 1.0);
                 }
-                if (i != j)
-                    other_process_track[i * dim + j] = int_track[j];
-                else
-                    other_process_track[i * dim + j] = int_track[j];
 
-                if (s >= begin)
-                {
-                    if (int_track[j] >= 1 && i != j)
-                        plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * recursive_array[i * dim + j];
-                    else if (int_track[j] >= 1 && i == j)
-                        plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * (recursive_array[i * dim + j] + 1.0);
-                }
+				if (i != j)
+				{
+					other_process_track[i * dim + j] = int_track[j];
+				}
+				else
+				{
+					other_process_track[i * dim + j] = int_track[j];
+				}
+
+				if (s < begin || int_track[j] < 1)
+				{
+					continue;
+				}
+
+				if (i != j)
+				{
+					plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * recursive_array[i * dim + j];
+				}
+				else if (i == j)
+				{
+					plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * (recursive_array[i * dim + j] + 1.0);
+				}
             }
             if (s >= begin)
             {
@@ -425,6 +456,7 @@ void plt_exponential_hawkes(const double mu[], const double alpha[], const doubl
             }
         }
 
+		// Adding lambda values at specified grid points
         if (s + 0.00001 >= begin)   // Floating point imprecision
         {
             for (int i = 0; i != dim; ++i)
@@ -434,28 +466,29 @@ void plt_exponential_hawkes(const double mu[], const double alpha[], const doubl
                 for (int j = 0; j != dim; ++j)
                 {
                     other_process[i * dim + j] = 0.0;
-                    if (int_track[j] >= 1)
+					if (int_track[j] < 1)
+					{
+						continue;
+					}
+                    if (int_track[i] >= 1)
                     {
-                        if (int_track[i] >= 1)
+                        if (i != j)
                         {
-                            if (i != j)
-                            {
-                                for (int k = max * j + other_process_track[i * dim + j]; k != max * j + int_track[j]; ++k)
-                                    other_process[i * dim + j] += exp(-(s - process_list[k]) * beta[i * dim + j]);
-                                plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * (exp(-(s - process_list[max * i + int_track[i] - 1]) *
-                                    beta[i * dim + j]) * recursive_array[i * dim + j] + other_process[i * dim + j]);
-                            }
-                            else 
-                            {
-                                plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * exp(-(s - process_list[max * i + int_track[i] - 1]) *
-                                    beta[i * dim + j]) * (1.0 + recursive_array[i * dim + j]);
-                            }
+                            for (int k = max * j + other_process_track[i * dim + j]; k != max * j + int_track[j]; ++k)
+                                other_process[i * dim + j] += exp(-(s - process_list[k]) * beta[i * dim + j]);
+                            plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * (exp(-(s - process_list[max * i + int_track[i] - 1]) *
+                                beta[i * dim + j]) * recursive_array[i * dim + j] + other_process[i * dim + j]);
                         }
-                        else
+                        else 
                         {
-                            for (int k = max * j; k != max * j + int_track[j]; ++k)
-                                plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * exp(-beta[i * dim + j] * (s - process_list[k]));
+                            plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * exp(-(s - process_list[max * i + int_track[i] - 1]) *
+                                beta[i * dim + j]) * (1.0 + recursive_array[i * dim + j]);
                         }
+                    }
+                    else
+                    {
+                        for (int k = max * j; k != max * j + int_track[j]; ++k)
+                            plt_intensity[i * plt_length + plt_end[i]] += alpha[i * dim + j] * exp(-beta[i * dim + j] * (s - process_list[k]));
                     }
                 }
                 plt_list[i * plt_length + plt_end[i]] = s;

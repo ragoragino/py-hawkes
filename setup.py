@@ -17,11 +17,11 @@ cur_dir = os.path.dirname(__file__)
 lib_dir = os.path.join(cur_dir, r'lib')
 os.chdir(cur_dir)
 
-sourcefiles = ["pyhawkes.pyx", "lib\exp_hawkes.cpp",
-               "lib\power_hawkes.cpp", "lib\general_hawkes.cpp"]
+sourcefiles = [r"pyhawkes.pyx", r"lib\exp_hawkes.cpp",
+               r"lib\power_hawkes.cpp", r"lib\general_hawkes.cpp", r"lib\additional_functions.cpp"]
 
 setup(cmdclass={'build_ext': build_ext},
       ext_modules=[Extension("pyhawkes", sourcefiles, language="c++",
                              include_dirs=[".", np.get_include(), lib_dir,
-                                           r'D:\Materials\Programming\C++\Libraries\include'])])
+                                           r"D:\Materials\Programming\C++\Libraries\include"])])
 
