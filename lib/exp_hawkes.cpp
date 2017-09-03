@@ -115,7 +115,7 @@ void simulate_exponential_hawkes(const double mu[], const double alpha[], const 
             process_list[max * l + process_track[l]] = s;
             process_track[l] += 1;
 
-			// Adjusting reursive arrays in the accepted dimension
+			// Adjusting recursive arrays in the accepted dimension
             for (int i = 0; i != dim; ++i)
             {
                 if (i != l)
