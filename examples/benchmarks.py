@@ -26,21 +26,14 @@ if __name__ == '__main__':
 
     mu1d = np.array([0.45, 0.4], dtype=float)
 
-    def base1d(container, loc, val):
+    def base(container, loc, val):
         return container[2 * loc] + container[2 * loc + 1] * \
                                     ((val / T - 0.5) ** 2)
 
     mu2d = np.array([0.25, 0.2, 0.25, 0.2], dtype=float)
 
-    def base2d(container, loc, val):
-        return container[2 * loc] + container[2 * loc + 1] * \
-                                    ((val / T - 0.5) ** 2)
-
     mu3d = np.array([0.13, 0.17, 0.13, 0.17, 0.13, 0.17], dtype=float)
 
-    def base3d(container, loc, val):
-        return container[2 * loc] + container[2 * loc + 1] * \
-                                    ((val / T - 0.5) ** 2)
 
     """
     1D
@@ -64,7 +57,7 @@ if __name__ == '__main__':
     n = alpha / beta
     begin = time.time()
     hawkes = pyhawkes.sim_gen_hawkes(mu1d, rho, m, M, epsilon, n, length=T, max=max_jumps,
-                                     rseed=seed, pfunc=base1d)
+                                     rseed=seed, pfunc=base)
     end = time.time()
     logger.info("1D Hawkes simulation with an exponential kernel with quadratic base intensity of length "
                 "{} lasted for {} s".format(len(hawkes[0]), end - begin))
@@ -86,7 +79,7 @@ if __name__ == '__main__':
     # POWER-LAW WITH QUADRATIC BASE INTENSITY
     begin = time.time()
     hawkes = pyhawkes.sim_gen_hawkes(mu1d, rho, m, M, epsilon, n, length=T, max=max_jumps,
-                                        rseed=seed, pfunc=base1d)
+                                        rseed=seed, pfunc=base)
     end = time.time()
     logger.info("1D Hawkes simulation with a power-law kernel with quadratic base intensity of length "
                 "{} lasted for {} s".format(len(hawkes[0]), end - begin))
@@ -113,7 +106,7 @@ if __name__ == '__main__':
     n = alpha / beta
     begin = time.time()
     hawkes = pyhawkes.sim_gen_hawkes(mu2d, rho, m, M, epsilon, n, length=T, max=max_jumps,
-                                     rseed=seed, pfunc=base2d)
+                                     rseed=seed, pfunc=base)
     end = time.time()
     logger.info("2D Hawkes simulation with an exponential kernel with quadratic base intensity of length "
                 "{} lasted for {} s".format(len(hawkes[0]) + len(hawkes[1]), end - begin))
@@ -135,7 +128,7 @@ if __name__ == '__main__':
     # POWER-LAW WITH QUADRATIC BASE INTENSITY
     begin = time.time()
     hawkes = pyhawkes.sim_gen_hawkes(mu2d, rho, m, M, epsilon, n, length=T, max=max_jumps,
-                                         rseed=seed, pfunc=base2d)
+                                         rseed=seed, pfunc=base)
     end = time.time()
     logger.info("2D Hawkes simulation with a power-law kernel with quadratic base intensity of length "
                 "{} lasted for {} s".format(len(hawkes[0]) + len(hawkes[1]), end - begin))
@@ -163,7 +156,7 @@ if __name__ == '__main__':
     n = alpha / beta
     begin = time.time()
     hawkes = pyhawkes.sim_gen_hawkes(mu3d, rho, m, M, epsilon, n, length=T, max=max_jumps,
-                                     rseed=seed, pfunc=base3d)
+                                     rseed=seed, pfunc=base)
     end = time.time()
     logger.info("3D Hawkes simulation with an exponential kernel with quadratic base intensity of length "
                 "{} lasted for {} s".format(len(hawkes[0]) + len(hawkes[1]) + len(hawkes[2]),
@@ -187,7 +180,7 @@ if __name__ == '__main__':
     # POWER-LAW WITH QUADRATIC BASE INTENSITY
     begin = time.time()
     hawkes = pyhawkes.sim_gen_hawkes(mu3d, rho, m, M, epsilon, n, length=T, max=max_jumps,
-                                         rseed=seed, pfunc=base3d)
+                                         rseed=seed, pfunc=base)
     end = time.time()
     logger.info("3D Hawkes simulation with a power-law kernel with quadratic base intensity of length "
                 "{} lasted for {} s".format(len(hawkes[0]) + len(hawkes[1]) + len(hawkes[2]),
