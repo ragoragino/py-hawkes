@@ -12,7 +12,7 @@ void simulate_general_hawkes(const double mu[], const double rho[], const double
 	bool indicator = stationaritycheck(n, dim);
 	if (indicator)
 	{
-		throw StationarityError("Non-stationary exponential kernel!");
+		throw StationarityError("Non-stationary kernel!");
 	}
 
 	srand(seed);
